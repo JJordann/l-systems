@@ -54,45 +54,74 @@
 (define dc (new bitmap-dc% [bitmap target]))
 (send dc set-pen "gray" 1 'solid)
 
-; turtle: (x y dir)
-(define turtle (list (/ h 2) (/ w 2) 0))
 
-(define (drawOnce turtle c dist)
-  (match c
-         [#\F 
-          (let ([mx (+ (first turtle) (* dist (cos (third turtle))))]
-                [my (+ (second turtle) (* dist (sin (third turtle))))])
-            (block 
-              (send dc draw-line (first turtle) (second turtle) mx my)
-              (list mx my (third turtle))))]
-         [#\G 
-          (let ([mx (+ (first turtle) (* dist (cos (third turtle))))]
-                [my (+ (second turtle) (* dist (sin (third turtle))))])
-            (block 
-              (send dc draw-line (first turtle) (second turtle) mx my)
-              (list mx my (third turtle))))]
-         [#\+ 
-          (list 
-            (first turtle) 
-            (second turtle)
-            (+ (third turtle) (* pi 2/3)))]
-         [#\-
-          (list
-            (first turtle)
-            (second turtle)
-            (- (third turtle) (* pi 2/3)))]))
+; get value:    (hash-ref t 'x)
+; change value: (hash-set t 'x 100)
 
 
-(define (render state scale)
-  (let ([turtle (list 0 700 0)]
-        [cmds (string->list (hash-ref state 'word))])
-    (foldr (lambda (c turtle) (drawOnce turtle c scale)) turtle cmds)))
 
+
+; calculate next position 
+(define (handleF turtle) 
+  (let* ([pace (hash-ref turtle 'pace)]
+         [dir (hash-ref turtle 'dir)]
+         [mx (+ (hash-ref turtle 'x) (* pace (cos dir)))] 
+         [my (+ (hash-ref turtle 'y) (* pace (sin dir)))])
+    (hash-set* turtle
+               'x mx
+               'y my
+               'trail (cons (list mx my) (hash-ref turtle 'trail)) )))
+
+
+(define handleG handleF)
+
+
+(define (handle+ turtle)
+  (hash-set* turtle 
+             'dir (+ (hash-ref turtle 'dir) (* pi 2/3))))
+
+
+(define (handle- turtle)
+  (hash-set* turtle 
+             'dir (- (hash-ref turtle 'dir) (* pi 2/3))))
+
+
+(define (step turtle command)
+  (match command
+         [#\F (handleF turtle)]
+         [#\G (handleG turtle)]
+         [#\+ (handle+ turtle)]
+         [#\- (handle- turtle)]))
+
+
+
+(define (compute-path state steps)
+  (let* ([expanded (expand-n state steps)]
+        [commands (string->list (hash-ref expanded 'word))]
+        [endState (foldr (lambda (c turtle) (step turtle c)) turtle commands)])
+    (hash-ref endState 'trail)))
+
+
+(define (render-path path)
+  (match-let ([(list x xs ...) path])
+             (block
+               (send dc draw-line (first x) (second x) 
+                     (first (first xs)) (second (first xs))) 
+               (cond
+                 [(> (length xs) 1)  (render-path xs)] 
+                 [else (send target save-file "img.png" 'png)]))))
+
+(define turtle 
+  (hash 'x 0
+        'y 500
+        'dir 0
+        'pace 15
+        'backtrack '()
+        'trail (list (list 0 500))))
 
 (define main
-  (let ([state (expand-n sierpinski 7)])
-      (block (render state 6)
-             (send target save-file "img.png" 'png))))
+  (let ([path (compute-path sierpinski 5)])
+    (render-path path)))
 
 
 

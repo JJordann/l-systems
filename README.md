@@ -1,6 +1,16 @@
 # l-systems
 Program to render fractal image from formal language
 
+Supported symbols:
+- `F`: draw forward
+- `G`: draw forward
+- `+`: turn counter clockwise by `'turn` radians
+- `-`: turn clockwise by `'turn` radians
+- `[`: push current state and turn counter clockwise by `'backtrack-turn` radians
+- `]`: pop current state and turn clockwise by `'backtrack-turn` radians
+
+
+
 # Examples
 
 ## Fern

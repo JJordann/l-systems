@@ -1,7 +1,20 @@
 # l-systems
 Program to render fractal image from formal language
 
-Supported symbols:
+## Usage 
+
+```racket
+(define rules
+  (hash 'word "F"                         ; starting word
+        'productions '((#\F "FF") ...)    ; list of productions -- (#\F "FF") denotes the production F -> FF
+        'turn (/ pi 2)                    ; turn angle in radians -- applies to 'F' and 'G'
+        'turn-backtrack 0                 ; turn angle in radians before and after backtracking
+        'rotation 0))                     ; initial direction
+  
+(render rules depth)
+```
+
+## Supported symbols:
 - `F`: draw forward
 - `G`: draw forward
 - `+`: turn counter clockwise by `'turn` radians

@@ -8,7 +8,7 @@ Program to render fractal image from formal language
   (hash 'word "F"                      ; starting word
         'productions '((#\F "FF") ...) ; list of productions -- (#\F "FF") denotes the production F -> FF
         'turn (/ pi 2)                 ; turn angle in radians -- applies to 'F' and 'G'
-        'turn-backtrack 0              ; turn angle in radians before and after backtracking
+        'backtrack-turn 0              ; turn angle in radians before and after backtracking
         'rotation 0))                  ; initial direction
   
 (render rules depth)
